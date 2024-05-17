@@ -1,23 +1,21 @@
-// Source code is decompiled from a .class file using FernFlower decompiler.
 package mg.itu.prom16.controller;
 
+import mg.itu.prom16.util.*;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import mg.itu.prom16.util.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.HashMap;
+import java.util.Map;
 
 public class FrontController extends HttpServlet {
 
    private String basePackage;
-   private List<Class<?>> controllers = new ArrayList<>();
+   private HashMap<String, Mapping> controllers = new HashMap<>();
    private int test = 0;
 
    @Override
@@ -35,17 +33,26 @@ public class FrontController extends HttpServlet {
    public FrontController() {
    }
 
-   protected void processRequest(HttpServletRequest req, HttpServletResponse res) throws Exception{
-      StringBuffer url = req.getRequestURL();
-      System.out.println(url);
+   protected void processRequest(HttpServletRequest req, HttpServletResponse res) throws Exception {
+      String fullURI = req.getRequestURI();
+      String contextPath = req.getContextPath();
+      String urlCourant = fullURI.substring(contextPath.length());
+
       res.setContentType("text/plain");
       PrintWriter out = res.getWriter();
-      for (Class<?> class1 : controllers) {
-         out.println("listes des controllers : ");
-         out.println("      =>"+class1.getName());
-      }
-   }
+      out.println("URL courante: " + urlCourant);
 
+      Mapping mapping = controllers.get(urlCourant);
+      if (mapping != null) {
+          out.println("Contrôleur trouvé:");
+          out.println("Class: " + mapping.getClassName());
+          out.println("Méthode: " + mapping.getMethodName());
+      } else {
+          out.println("L'URL spécifiée n'existe pas.");
+      }
+  }
+
+   @Override
    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
       try {
          this.processRequest(req, res);
@@ -54,6 +61,7 @@ public class FrontController extends HttpServlet {
       }
    }
 
+   @Override
    protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
       try {
          this.processRequest(req, res);
@@ -62,8 +70,8 @@ public class FrontController extends HttpServlet {
       }
    }
 
+   @Override
    public String getServletInfo() {
       return "Short description";
    }
 }
-
