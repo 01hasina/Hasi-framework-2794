@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Get {
-    String value();
+public @interface GetMethode {
+    String value() default "";
+    
 }
