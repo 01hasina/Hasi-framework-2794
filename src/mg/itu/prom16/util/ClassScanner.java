@@ -1,18 +1,20 @@
 package mg.itu.prom16.util;
-import mg.itu.prom16.annotation.*;
+
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+
+import mg.itu.prom16.annotation.*;
+
+import java.net.URL;
+
 
 public class ClassScanner {
 
-    public static HashMap<String, Mapping> scanClasses(String packageName) throws Exception {
-        HashMap<String, Mapping> mappings = new HashMap<>();
-        List<Class<?>> classes = new ArrayList<>();
+    @SuppressWarnings("unchecked")
+    public static HashMap<String, Mapping> scanClasses(String packageName, Class annotationClass , Class annotationMethod) throws Exception {
+        HashMap<String, Mapping> classes = new HashMap<>();
         String path = packageName.replace('.', '/');
 
         URL url = Thread.currentThread().getContextClassLoader().getResource(path);
@@ -33,24 +35,34 @@ public class ClassScanner {
                 try {
                     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
                     Class<?> loadedClass = classLoader.loadClass(className);
-                    if (loadedClass.getAnnotation(Controleur.class) != null) {
-                        classes.add(loadedClass);
-
-                        // Process methods annotated with @Get
-                        Method[] methods = loadedClass.getDeclaredMethods();
-                        for (Method method : methods) {
-                            if (method.isAnnotationPresent(Get.class)) {
-                                Get getAnnotation = method.getAnnotation(Get.class);
-                                String urlValue = getAnnotation.value();
-                                mappings.put(urlValue, new Mapping(loadedClass.getName(), method.getName()));
-                            }
-                        }
+                    if (loadedClass.isAnnotationPresent(annotationClass)) {
+                        HashMap<String, Mapping> annotatedMethods = getAnnotatedMethods(loadedClass, annotationMethod);
+                        classes.putAll(annotatedMethods);
                     }
-                } catch (Exception e) {
+                    
+                } 
+                catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
-        return mappings;
+        return classes;
     }
+ 
+    @SuppressWarnings("unchecked")
+    public static HashMap<String, Mapping> getAnnotatedMethods(Class<?> loadedClass, Class annotationClass) {
+        HashMap<String, Mapping> methods = new HashMap<>();
+
+        for (Method method : loadedClass.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(annotationClass)) {
+                Mapping Mapping = new Mapping(loadedClass, method);
+                methods.put(((GetMethode) method.getAnnotation(annotationClass)).value(), Mapping);
+            }
+        }
+        return methods;
+    }
+
+
+
 }
+

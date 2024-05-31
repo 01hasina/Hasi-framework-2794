@@ -1,6 +1,7 @@
 package mg.itu.prom16.controller;
 
 import mg.itu.prom16.util.*;
+import mg.itu.prom16.annotation.*;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -10,21 +11,18 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.Map;
 
 public class FrontController extends HttpServlet {
 
    private String basePackage;
    private HashMap<String, Mapping> controllers = new HashMap<>();
-   private int test = 0;
 
    @Override
    public void init(ServletConfig config) throws ServletException {
       super.init(config);
-      test += 1;
       basePackage = config.getInitParameter("base-package");
       try {
-         controllers = ClassScanner.scanClasses(basePackage);
+         controllers = ClassScanner.scanClasses(basePackage, Controleur.class, GetMethode.class);
       } catch (Exception e) {
          throw new ServletException("Erreur lors du scan des classes", e);
       }
@@ -44,9 +42,10 @@ public class FrontController extends HttpServlet {
 
       Mapping mapping = controllers.get(urlCourant);
       if (mapping != null) {
+         Object result = mapping.executeMethod();
           out.println("Contrôleur trouvé:");
           out.println("Class: " + mapping.getClassName());
-          out.println("Méthode: " + mapping.getMethodName());
+          out.println("Exécution du méthode: " + mapping.getMethodName() + "--->" + result);
       } else {
           out.println("L'URL spécifiée n'existe pas.");
       }
