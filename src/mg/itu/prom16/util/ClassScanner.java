@@ -1,19 +1,17 @@
 package mg.itu.prom16.util;
 
-
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-
-import mg.itu.prom16.annotation.*;
-
 import java.net.URL;
 
+import mg.itu.prom16.annotation.*;
 
 public class ClassScanner {
 
     @SuppressWarnings("unchecked")
-    public static HashMap<String, Mapping> scanClasses(String packageName, Class annotationClass , Class annotationMethod) throws Exception {
+    public static HashMap<String, Mapping> scanClasses(String packageName, Class annotationClass,
+            Class annotationMethod) throws Exception {
         HashMap<String, Mapping> classes = new HashMap<>();
         String path = packageName.replace('.', '/');
 
@@ -39,16 +37,15 @@ public class ClassScanner {
                         HashMap<String, Mapping> annotatedMethods = getAnnotatedMethods(loadedClass, annotationMethod);
                         classes.putAll(annotatedMethods);
                     }
-                    
-                } 
-                catch (Exception e) {
+
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
         return classes;
     }
- 
+
     @SuppressWarnings("unchecked")
     public static HashMap<String, Mapping> getAnnotatedMethods(Class<?> loadedClass, Class annotationClass) {
         HashMap<String, Mapping> methods = new HashMap<>();
@@ -61,8 +58,4 @@ public class ClassScanner {
         }
         return methods;
     }
-
-
-
 }
-

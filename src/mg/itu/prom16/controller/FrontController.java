@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.RequestDispatcher;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -28,9 +29,6 @@ public class FrontController extends HttpServlet {
       }
    }
 
-   public FrontController() {
-   }
-
    protected void processRequest(HttpServletRequest req, HttpServletResponse res) throws Exception {
       String fullURI = req.getRequestURI();
       String contextPath = req.getContextPath();
@@ -43,13 +41,32 @@ public class FrontController extends HttpServlet {
       Mapping mapping = controllers.get(urlCourant);
       if (mapping != null) {
          Object result = mapping.executeMethod();
-          out.println("Contrôleur trouvé:");
-          out.println("Class: " + mapping.getClassName());
-          out.println("Exécution du méthode: " + mapping.getMethodName() + "--->" + result);
+         dispatchResponse(req, res, result, out);
+         out.println("Contrôleur trouvé:");
+         out.println("Class: " + mapping.getClassName());
+         out.println("Exécution du méthode: " + mapping.getMethodName() + "--->" +
+         result);
       } else {
-          out.println("L'URL spécifiée n'existe pas.");
+         out.println("L'URL spécifiée n'existe pas.");
       }
-  }
+   }
+
+   protected void dispatchResponse(HttpServletRequest request, HttpServletResponse response, Object model,
+         PrintWriter out) throws ServletException, IOException {
+      if (model instanceof String) {
+         out.println(model);
+      } else if (model instanceof ModelView modelView) {
+         RequestDispatcher dispatcher = request.getRequestDispatcher(modelView.getUrl());
+         HashMap<String, Object> data = modelView.getData();
+         for (String varName : data.keySet()) {
+            request.setAttribute(varName, data.get(varName));
+         }
+         dispatcher.forward(request, response);
+      } else {
+         out.println("return type not found!!");
+         throw new ServletException("return type not found!!");
+      }
+   }
 
    @Override
    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
