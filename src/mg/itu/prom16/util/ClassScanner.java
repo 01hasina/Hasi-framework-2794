@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.net.URL;
 
 import mg.itu.prom16.annotation.*;
+import mg.itu.prom16.exception.DuplicateMethodException;
+import mg.itu.prom16.exception.PackageNotFoundException;
 
 public class ClassScanner {
 
@@ -17,7 +19,7 @@ public class ClassScanner {
 
         URL url = Thread.currentThread().getContextClassLoader().getResource(path);
         if (url == null) {
-            throw new Exception("Package :" + packageName + " non trouvé");
+            throw new PackageNotFoundException(packageName);
         }
 
         File directory = new File(url.toURI());
@@ -52,8 +54,15 @@ public class ClassScanner {
 
         for (Method method : loadedClass.getDeclaredMethods()) {
             if (method.isAnnotationPresent(annotationClass)) {
-                Mapping Mapping = new Mapping(loadedClass, method);
-                methods.put(((GetMethode) method.getAnnotation(annotationClass)).value(), Mapping);
+                GetMethode annotation = method.getAnnotation(GetMethode.class);
+                String key = annotation.value();
+
+                if (methods.containsKey(key)) {
+                    throw new DuplicateMethodException("Duplicate method found for key: " + key);
+                }
+
+                Mapping mapping = new Mapping(loadedClass, method);
+                methods.put(key, mapping);
             }
         }
         return methods;
