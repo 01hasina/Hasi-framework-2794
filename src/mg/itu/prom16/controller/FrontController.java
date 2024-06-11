@@ -2,6 +2,7 @@ package mg.itu.prom16.controller;
 
 import mg.itu.prom16.util.*;
 import mg.itu.prom16.annotation.*;
+import mg.itu.prom16.exception.ReturnTypeNotRecognizedException;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -63,8 +64,9 @@ public class FrontController extends HttpServlet {
          }
          dispatcher.forward(request, response);
       } else {
-         out.println("return type not found!!");
-         throw new ServletException("return type not found!!");
+         String className = model.getClass().getName();
+         ReturnTypeNotRecognizedException exception = new ReturnTypeNotRecognizedException(className);
+         throw new ServletException(exception);
       }
    }
 
