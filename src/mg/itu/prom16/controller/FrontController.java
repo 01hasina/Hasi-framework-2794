@@ -12,7 +12,11 @@ import jakarta.servlet.RequestDispatcher;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class FrontController extends HttpServlet {
 
@@ -41,7 +45,24 @@ public class FrontController extends HttpServlet {
 
       Mapping mapping = controllers.get(urlCourant);
       if (mapping != null) {
-         Object result = mapping.executeMethod();
+         Object instance = mapping.getClassName().getDeclaredConstructor().newInstance();
+         Method method = mapping.getMethodName();
+         Parameter [] params = method.getParameters();
+         List<Object> arg = new ArrayList<>();
+         for (Parameter parameter : params) {
+            Param param = parameter.getAnnotation(Param.class);
+            String nameParameter = "";
+            if (param != null) {
+               nameParameter = param.valeur();
+            } else {
+               nameParameter = parameter.getName();
+            }
+            String value = req.getParameter(nameParameter);
+            arg.add(value);
+         }
+
+         Object result = method.invoke(instance, arg.toArray());
+
          dispatchResponse(req, res, result, out);
          out.println("Contrôleur trouvé:");
          out.println("Class: " + mapping.getClassName());
