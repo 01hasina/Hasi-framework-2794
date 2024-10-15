@@ -66,6 +66,34 @@ public class FrontController extends HttpServlet {
             }
         } catch (Exception e) {
             throw new ServletException(e);
+
+    protected void displayListMapping(PrintWriter out) {
+        for (Map.Entry<String, Mapping> e : listMapping.entrySet()) {
+            String key = e.getKey();
+            Mapping value = e.getValue();
+
+            out.println("<ul> URL : " + key + "</ul>");
+            out.println("<li> Class name :  "+ value.getClass1().getSimpleName() +" </li> <li> Method name : "+ value.getMethod().getName() +"</li>");
+
+        }
+    }
+
+    protected void doRestApi(Object valueFunction, HttpServletResponse response) throws Exception {
+        try {
+            if (valueFunction instanceof ModelView) {
+                ModelView modelView = (ModelView) valueFunction;
+                HashMap<String, Object> listKeyAndValue = modelView.getData();
+                String dataString = JsonParserUtil.objectToJson(listKeyAndValue);
+                response.setContentType("text/json");
+                response.getWriter().println(dataString);
+            }
+            else {
+                String dataString = JsonParserUtil.objectToJson(valueFunction);
+                response.setContentType("text/json");
+                response.getWriter().println(dataString);
+            }
+        } catch (Exception e) {
+            throw new ServletException(e);
         }
     }
 
@@ -186,7 +214,7 @@ public class FrontController extends HttpServlet {
             }
             
             Mapping mapping =  listMapping.get(relativeURI);
-            Object instance = mapping.getClass1().getDeclaredConstructor().newInstance();
+            Object instance = mapping.getClass1().getDeclaredConstructor().newInstance()
             Method method = getMethodByVerb(request, mapping);
             List<Object> listArgs = ServletUtil.parseParameters(request, method);
 
@@ -205,7 +233,8 @@ public class FrontController extends HttpServlet {
             response.setContentType("text/html;charset=UTF-8");  
             PrintWriter out = response.getWriter();
             out.println(e.getMessage());
-            out.close();
+            out.close();      
+
         }
     }
 
