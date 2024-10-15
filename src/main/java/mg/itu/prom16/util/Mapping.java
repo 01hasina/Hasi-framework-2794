@@ -1,26 +1,27 @@
 package mg.itu.prom16.util;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 
 public class Mapping {
     
     Class<?> class1;
-    Method method;
+    HashMap<String, Method> verbMethod;
 
     
-    public Mapping(Class<?> class1, Method method) {
+    public Mapping(Class<?> class1, HashMap<String, Method> verbMethod) {
         this.class1 = class1;
-        this.method = method;
+        this.verbMethod = verbMethod;
     }
 
 
-    public Method getMethod() {
-        return method;
+    public HashMap<String, Method> getVerbMethod() {
+        return verbMethod;
     }
 
 
-    public void setMethod(Method method) {
-        this.method = method;
+    public void setVerbMethod(HashMap<String, Method> verbMethod) {
+        this.verbMethod = verbMethod;
     }
 
 
