@@ -5,10 +5,14 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
 import mg.itu.prom16.annotation.ModelParam;
 import mg.itu.prom16.annotation.RequestParam;
 import mg.itu.prom16.annotation.RestApi;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -33,6 +37,7 @@ public class ServletUtil {
             RequestParam requestParam = arg.getAnnotation(RequestParam.class);
             ModelParam modelParam = arg.getAnnotation(ModelParam.class);
 
+
             if (modelParam != null) {
                 String valueParam = modelParam.value();
                 if (valueParam.isEmpty()) {
@@ -51,6 +56,16 @@ public class ServletUtil {
                 value = o;
             }
             else if (requestParam != null) {
+                if(arg.getType().isAssignableFrom(PartFile.class)){
+                    Part part = request.getPart(requestParam.value());
+                    PartFile file = castToPartFile(part);
+                    parsedArgs.add(file);
+
+                    System.out.println("miditra ato");
+                    continue;
+                }
+
+                
                 if (requestParam.value().isEmpty()) {
                     annotName = arg.getName();
                 }
@@ -58,12 +73,15 @@ public class ServletUtil {
                     annotName = requestParam.value();
                 }
                 value = request.getParameter(annotName);
+                parsedArgs.add(value);
+                
             }
             else {
                 throw new Exception("Annotation not found");
             }
-            parsedArgs.add(value);
+            
         }
+        System.out.println("size=="+parsedArgs.size());
         return parsedArgs;
     }
 
@@ -99,5 +117,25 @@ public class ServletUtil {
                 }
             }
        }
+    }
+    public static PartFile castToPartFile(Part part) throws IOException {
+        String fileName = part.getSubmittedFileName();
+        String contentType = part.getContentType();
+        long size = part.getSize();
+
+        byte[] content = getBytesFromInputStream(part.getInputStream());
+
+        return new PartFile(fileName, contentType, size, content);
+    }
+
+    // Méthode utilitaire pour convertir un InputStream en tableau d'octets
+    private static byte[] getBytesFromInputStream(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, bytesRead);
+        }
+        return outputStream.toByteArray();
     }
 }
