@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.*;
+import jakarta.servlet.annotation.MultipartConfig;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -27,7 +28,11 @@ import mg.itu.prom16.util.Mapping;
 import mg.itu.prom16.util.ServletUtil;
 import mg.itu.prom16.util.ModelView;
 
-
+@MultipartConfig(
+    fileSizeThreshold = 1024 * 1024 * 2,  // 2MB avant d'être écrit sur le disque
+    maxFileSize = 1024 * 1024 * 10,       // Taille maximale d'un fichier (10MB)
+    maxRequestSize = 1024 * 1024 * 50     // Taille maximale d'une requête (50MB)
+)
 public class FrontController extends HttpServlet {
     private String basePackage ;
     private HashMap<String , Mapping> listMapping;
